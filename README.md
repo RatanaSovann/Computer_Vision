@@ -44,4 +44,45 @@ Instead of learning the full feature mapping, Resnet is designed to learn from r
   
 The main idea behind ResNet is skip connections—learning from residuals—which allows the gradient to flow through while bypassing the ReLU during backpropagation. This enables deeper layers to be constructed, creating a richer model.
 
-More indepth detail can be found: [transfer_learning.ipynb]()
+More in-depth detail can be found: [transfer_learning.ipynb](https://github.com/RatanaSovann/Computer_Vision/blob/main/transfer_learning.ipynb)
+
+## Transfer Learning:
+After loading the model, all layers of the model are freeze and the model head replaces with the following 3 fully connected layers:
+- The 1st layer reduces models’ in_features to lower dimension, 256 neurons.
+- Then followed by a ReLu activation function to introduce non-linearity.
+- 2nd layer further compress 256 neurons to 128 neurons. Followed by another ReLu activation function
+- 3rd layer is the output later with final output being 101 = 101 class.
+  
+All models are trained over 10 Epochs with the same specification (batch_size = 50, lr = 0.00001, CrossEntropyLoss and Adam optimizer)
+
+For example: for GoogleLeNet
+
+````python
+# Load GoogLeNet
+googlenet = models.googlenet(pretrained=True)
+
+# Freeze all layers for param in googlenet.parameters()
+for param in googlenet.parameters():
+    param.requires_grad = False
+
+# Replace just the model head
+# Check original fc input size
+in_features = googlenet.fc.in_features
+
+# Replace model head with your own 3-layer MLP
+googlenet.fc = nn.Sequential(
+    nn.Linear(in_features, 256), # - A Linear layer reducing from 1024 features to 256
+    nn.ReLU(),                   # - A ReLU activation function
+    nn.Linear(256, 128),         # - A Linear layer reducing from 256 features to 128
+    nn.ReLU(),                   # - A ReLU activation functi
+    nn.Linear(128, 101),         # - A final Linear layer reducing from 128 to 101 (for 101 class)
+)
+````
+The same step are carry out to all other vision models with consideration to each model's documentation:
+
+### Transfer Learning Evaluation:
+<p align = 'center'><img width="840" height="400" alt="image" src="https://github.com/user-attachments/assets/f8e7661b-392f-4e42-995f-09daabf533fa" /><p align = 'center'>
+
+- The best performing model from transform learning with only 10 Epochs is ResNet50. It also has the longest training time (93min)
+- The fastest model is MobileVNet (large), which has similar performance to GoogleLeNet, but trains a bit quicker (74 min)
+- Moving forward to part B, we will use ResNet50 to fine-tune as it gives the best result.

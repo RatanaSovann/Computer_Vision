@@ -85,4 +85,4 @@ The same step are carry out to all other vision models with consideration to eac
 
 - The best performing model from transform learning with only 10 Epochs is ResNet50. It also has the longest training time (93min)
 - The fastest model is MobileVNet (large), which has similar performance to GoogleLeNet, but trains a bit quicker (74 min)
-- Moving forward to part B, we will use ResNet50 to fine-tune as it gives the best result.
+- Moving forward we will use ResNet50 to fine-tune as it gives the best result.

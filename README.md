@@ -86,3 +86,58 @@ The same step are carry out to all other vision models with consideration to eac
 - The best performing model from transform learning with only 10 Epochs is ResNet50. It also has the longest training time (93min)
 - The fastest model is MobileVNet (large), which has similar performance to GoogleLeNet, but trains a bit quicker (74 min)
 - Moving forward we will use ResNet50 to fine-tune as it gives the best result.
+
+### Model Finetuning
+The fine-tuning in part B is an iterative process over many experiments. It starts with unfreezing deeper layers first. The idea is deeper layers learn task-specific patterns, like shapes of objects or semantic parts. Keeping earlier layers frozen help preserves useful low-level pattern learned from the large dataset (like ImageNet).
+
+3-layer MLP (Regular): A Linear layer reducing from in_features (e.g., 2048) to 256
+- A ReLU activation function
+- A Linear layer reducing from 256 to 128
+- A ReLU activation function
+- A final Linear layer reducing from 128 to 101 output classes (for classification)
+  
+3-layer MLP (BatchNorm + Dropout):
+- Linear layer: from in_features (e.g., 2048) to 512
+- Batch Normalization on 512 features
+- ReLU activation
+- Dropout with probability 0.4
+- Linear layer: from 512 to 256
+- Batch Normalization on 256 features
+- ReLU activation
+- Dropout with probability 0.4
+- Final Linear layer: from 256 to 101 output classes (for 101-class classification)
+
+#### Neural Network Architecture Tested:
+
+<p align ='center'><img width="800" height="400" alt="image" src="https://github.com/user-attachments/assets/86f066d4-a597-4adc-9117-a6e00345d3a2" /><p align ='center'>
+
+<p align ='center'><img width="800" height="500" alt="image" src="https://github.com/user-attachments/assets/b0da77fa-7a49-43a0-b4ac-24d4bbf9e5b4" /><p align ='center'>
+
+<p align ='center'><img width="800" height="300" alt="image" src="https://github.com/user-attachments/assets/eb227aa0-88c1-4715-aa45-8d877e2c858c" /><p align ='center'>
+
+
+### Discussion of Results
+
+#### Best Model Evaluation
+
+<p align ='center'><img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/8612c9bc-1937-4071-8c49-6188120efef6" /><p align ='center'>
+
+
+<p align ='center'><img width="576" height="455" alt="image" src="https://github.com/user-attachments/assets/27980b14-22ac-49d6-b912-c011ac07c0af" /><p align ='center'>
+<p align ='center'><img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/8943c411-e6c1-42ac-a91a-a94b20e1c869" /><p align ='center'>
+
+- The ResNet50 model achieved 81.6% test accuracy on Food-101 with stable training, indicating good regularisation and no overfitting. Unfreezing Layer 2 provided little benefit, suggesting mid-level features were already transferable.
+
+- Using label smoothing (0.1) improved generalisation by preventing overconfidence, which is useful for visually similar food classes.
+
+- The gap between lower train/val accuracy (~65%) and higher test accuracy is mainly due to strong data augmentation during training, making learning harder but improving generalisation, while cleaner test images boosted final performance.
+
+### Limitations and Recommendations:
+Throughout this project, several challenges highlighted areas for improvement, both in technical setup and workflow planning. One major obstacle was the inefficiency in the initial training process. Early experiments conducted on Google Colab were frequently interrupted due to the 4-hour GPU usage limit, which often resulted in lost progress and wasted training time. Transitioning to Kaggle’s GPU environment, which offers 30 hours per week, provided a more stable and manageable solution for longer training sessions. However, this shift also emphasised the importance of having a consistent and portable development setup.
+
+Another key challenge was the lack of automated model checkpointing. During initial runs, the model was not saved periodically or upon validation improvement, leading to difficulties in reproducing the best-performing version. This underscored the need for implementing proper checkpointing strategies early on, preferably storing models in a persistent, external directory instead of the temporary working directories used by Colab or Kaggle, which are reset upon session termination.
+
+Additionally, the overall code structure could be optimised for readability, modularity, and efficiency. Training logic, evaluation metrics, and data augmentation pipelines were sometimes repeated or hardcoded, making experimentation slower and harder to manage.
+
+Moving forward, unfreezing only Layers 3 and 4 of ResNet50 appears to be sufficient for achieving high accuracy on Food-101, making Layer 2 fine-tuning unnecessary in most cases. This can save computational resources and training time. Lastly, label smoothing and discriminative learning rates proved to be effective for fine-tuning, and should be considered best practices when adapting pretrained models to fine-grained classification tasks like food recognition.
+
